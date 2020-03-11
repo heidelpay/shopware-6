@@ -11,6 +11,7 @@ use HeidelPayment6\Components\Struct\Configuration;
 use HeidelPayment6\Components\TransactionStateHandler\TransactionStateHandlerInterface;
 use HeidelPayment6\Components\Validator\AutomaticShippingValidatorInterface;
 use HeidelPayment6\Installers\CustomFieldInstaller;
+use heidelpayPHP\Constants\PaymentState;
 use heidelpayPHP\Exceptions\HeidelpayApiException;
 use heidelpayPHP\Heidelpay;
 use heidelpayPHP\Resources\AbstractHeidelpayResource;
@@ -24,6 +25,7 @@ use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
 use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AsynchronousPaymentHandlerInterface;
 use Shopware\Core\Checkout\Payment\Exception\AsyncPaymentFinalizeException;
 use Shopware\Core\Checkout\Payment\Exception\AsyncPaymentProcessException;
+use Shopware\Core\Checkout\Payment\Exception\CustomerCanceledAsyncPaymentException;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -144,6 +146,10 @@ abstract class AbstractHeidelpayHandler implements AsynchronousPaymentHandlerInt
             $this->heidelpayClient = $this->clientFactory->createClient($salesChannelContext->getSalesChannel()->getId());
 
             $this->payment = $this->heidelpayClient->fetchPaymentByOrderId($transaction->getOrderTransaction()->getId());
+
+            if ($this->payment->getState() === PaymentState::STATE_CANCELED) {
+                throw new CustomerCanceledAsyncPaymentException($transaction->getOrderTransaction()->getId(), 'Canceled by customer');
+            }
 
             $this->transactionStateHandler->transformTransactionState(
                 $transaction->getOrderTransaction(),

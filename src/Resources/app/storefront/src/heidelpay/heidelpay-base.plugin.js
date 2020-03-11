@@ -25,6 +25,8 @@ export default class HeidelpayBasePlugin extends Plugin {
         this.submitButton = document.getElementById(this.options.submitButtonId);
         this.confirmForm = document.getElementById(this.options.confirmFormId);
 
+        this.preventFormSubmit = false;
+
         this._registerEvents();
     }
 
@@ -50,6 +52,12 @@ export default class HeidelpayBasePlugin extends Plugin {
         const resourceIdElement = document.getElementById(this.options.resourceIdElementId);
         resourceIdElement.value = resource.id;
 
+        this.$emitter.publish('heidelpayBase_beforeSubmitResource');
+
+        if (this.preventFormSubmit) {
+            return;
+        }
+
         this.confirmForm.submit();
     }
 
@@ -59,6 +67,12 @@ export default class HeidelpayBasePlugin extends Plugin {
     submitTypeId(typeId) {
         const resourceIdElement = document.getElementById(this.options.resourceIdElementId);
         resourceIdElement.value = typeId;
+
+        this.$emitter.publish('heidelpayBase_beforeSubmitTypeId');
+
+        if (this.preventFormSubmit) {
+            return;
+        }
 
         this.confirmForm.submit();
     }
