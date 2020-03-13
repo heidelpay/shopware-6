@@ -10,7 +10,7 @@ variables:
     MYSQL_USER: shopware
     MYSQL_PASSWORD: shopware
     PLUGIN_NAME: HeidelPayment6
-    SHOPWARE_VERSION: "6.1" # Tag
+    SHOPWARE_VERSION: "v6.1.3" # Tag
 
 cache:
     key: "$PLUGIN_NAME-$CI_COMMIT_REF_SLUG"
@@ -36,6 +36,7 @@ phpstan:
         - composer
     script:
         - git clone -b ${SHOPWARE_VERSION} https://github.com/shopware/development "${CI_PROJECT_DIR}/opt/shopware"
+        - rmdir -f "${CI_PROJECT_DIR}/opt/shopware/platform"
         - git clone -b ${SHOPWARE_VERSION} https://github.com/shopware/platform "${CI_PROJECT_DIR}/opt/shopware/platform"
         - mv ${CI_PROJECT_DIR}/opt /tmp/opt
         - cp -r ${CI_PROJECT_DIR} /tmp/opt/shopware/custom/plugins/${PLUGIN_NAME}
