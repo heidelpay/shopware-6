@@ -10,6 +10,7 @@ use heidelpayPHP\Resources\Basket;
 use heidelpayPHP\Resources\EmbeddedResources\BasketItem;
 use InvalidArgumentException;
 use Shopware\Core\Checkout\Cart\Price\Struct\CartPrice;
+use Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
 use Shopware\Core\Checkout\Promotion\Cart\PromotionProcessor;
@@ -31,7 +32,14 @@ class BasketResourceHydrator implements ResourceHydratorInterface
         $currencyPrecision = $transaction->getOrder()->getCurrency() !== null ? $transaction->getOrder()->getCurrency()->getDecimalPrecision() : 4;
         $currencyPrecision = min($currencyPrecision, 4);
 
-        $amountTotalVat = round($transaction->getOrder()->getAmountTotal() - $transaction->getOrder()->getAmountNet(), $currencyPrecision);
+        $amountTotalVat = round(
+            $transaction->getOrder()->getAmountTotal() - $transaction->getOrder()->getAmountNet(),
+            $currencyPrecision
+        );
+        $amountTotalDiscount = round(
+            $this->calculateAmountTotalDiscount($transaction->getOrder()->getLineItems()),
+            $currencyPrecision
+        );
 
         if ($transaction instanceof AsyncPaymentTransactionStruct) {
             $transactionId = $transaction->getOrderTransaction()->getId();
@@ -46,6 +54,7 @@ class BasketResourceHydrator implements ResourceHydratorInterface
         );
 
         $heidelBasket->setAmountTotalVat($amountTotalVat);
+        $heidelBasket->setAmountTotalDiscount($amountTotalDiscount);
 
         if (null === $transaction->getOrder()->getLineItems()) {
             return $heidelBasket;
@@ -158,5 +167,17 @@ class BasketResourceHydrator implements ResourceHydratorInterface
 
             $basket->addBasketItem($dispatchBasketItem);
         }
+    }
+
+    private function calculateAmountTotalDiscount(OrderLineItemCollection $lineItems): float
+    {
+        $lineItems = array_map(
+            static function ($lineItem) {
+                return $lineItem->getType() === PromotionProcessor::LINE_ITEM_TYPE ? $lineItem->getTotalPrice() * -1 : 0.0;
+            },
+            $lineItems->getElements()
+        );
+
+        return array_sum($lineItems);
     }
 }
