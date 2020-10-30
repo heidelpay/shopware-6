@@ -56,5 +56,8 @@ Further information and configuration you can find within the <a href="https://d
 #### I do not see the plugin inside the plugin list
 >In this case it's required to run the command `./bin/console plugin:refresh` manually in the shopware directory
 
+#### Hook registration fails
+>Webhooks can only be registered with SSL secured Urls (https).
+
 #### Support
 If you need support please feel free to contact us via e-mail <a href="mailto:support@heidelpay.com">support@heidelpay.com</a>
