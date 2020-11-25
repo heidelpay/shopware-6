@@ -1,3 +1,9 @@
+# *** ATTENTION ***
+Due to the recent re-branding of the company `heidelpay GmbH` to `Unzer GmbH`this repository is replaced by https://github.com/unzerdev/shopware6 
+and the old heidelpay repository will soon be archived.
+
+Please switch to the Unzer Shopware 6 plugin https://packagist.org/packages/unzerdev/shopware6
+
 # HeidelPayment
 
 Heidelpay payment integration for Shopware 6.2 including the following payment methods:
